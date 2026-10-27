@@ -343,10 +343,10 @@ For academic review, content-based recommendation systems can be evaluated using
 
 ## ⚖️ License & Attribution
 
-- **Original Project**: Developed by: Vaibhav Jawadwar
-                                      Prabodh Kulkarni
-                                      Sandip Patil
-                                      Omkar Shelke
+- **Project Developed by:**:1. Vaibhav Jawadwar
+                            2. Prabodh Kulkarni
+                            3. Sandip Patil
+                            4. Omkar Shelke
 - **Academic Mini-Project Extensions**: Full-Stack FastAPI backend, TMDB integration, modern dark-mode frontend, NumPy 2 compatibility shim, and automated test suite.
 - **Data Source**: [TMDB Movies Dataset 2023](https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies).
 - **License**: MIT License.
