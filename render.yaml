@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: cineml-movie-recommender
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: MONGO_URI
+        value: mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority
+      - key: MONGO_DB_NAME
+        value: sample_mflix
+      - key: TMDB_API_KEY
+        value: API_KEY_VALUE
+      - key: TMDB_ACCESS_TOKEN
+        value: TMDB_ACCESS_TOKEN_VALUE

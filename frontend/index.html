@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CineML — Intelligent Movie Recommendation System powered by MongoDB Atlas & Machine Learning.">
+  <title>CineML — Movie Recommender & Discovery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <!-- Background Ambient Glow -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <!-- Navigation Bar -->
+  <header class="navbar" role="banner">
+    <div class="nav-container">
+      <a href="#" class="brand-logo" id="brand-link">
+        <span class="logo-icon">🎬</span>
+        <span class="logo-text">Cine<span class="highlight">ML</span></span>
+      </a>
+      <div class="nav-status" id="api-status-badge">
+        <span class="status-indicator loading" id="status-dot"></span>
+        <span class="status-label" id="status-text">Connecting to ML Engine...</span>
+      </div>
+      <nav class="nav-links">
+        <a href="#preference-section" class="nav-link">Preferences</a>
+        <a href="#search-section" class="nav-link">Title Search</a>
+        <a href="#recommendations-section" class="nav-link">Recommendations</a>
+        <button type="button" class="nav-watchlist-tab" id="nav-watchlist-btn" title="View your saved watchlist">
+          <span class="nav-watchlist-icon">🔖</span>
+          <span class="nav-watchlist-text">Watchlist</span>
+          <span class="nav-watchlist-badge" id="nav-watchlist-count">0</span>
+        </button>
+      </nav>
+
+      <!-- Auth Controls (Google Sign-In & User Profile) -->
+      <div class="nav-auth-container" id="nav-auth-container">
+        <!-- Logged Out State -->
+        <div id="auth-logged-out" class="auth-box">
+          <div id="g_id_signin_btn" class="google-signin-wrapper"></div>
+        </div>
+
+        <!-- Logged In State -->
+        <div id="auth-logged-in" class="auth-box hidden">
+          <img id="user-avatar" class="user-avatar" src="" alt="User Avatar" />
+          <span id="user-display-name" class="user-name">User</span>
+          <button type="button" class="btn-signout" id="btn-signout" title="Sign out">Sign Out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Hero Section -->
+    <section class="hero-section" id="hero">
+      <h1 class="hero-title">Discover Movies You'll <span class="gradient-text">Actually Love</span></h1>
+
+      <!-- User Preference Form Card -->
+      <div class="preference-card" id="preference-section">
+        <div class="preference-header">
+          <h2 class="preference-title">🎯 Your Movie Preferences</h2>
+          <p class="preference-desc">Select one or more genres to tailor your movie discovery feed:</p>
+        </div>
+
+        <!-- Dynamic Genre Chips -->
+        <div class="genre-chips-container" id="genre-chips-container">
+          <!-- Populated dynamically via JS -->
+          <div class="genre-chip" data-genre="Action">Action</div>
+          <div class="genre-chip" data-genre="Adventure">Adventure</div>
+          <div class="genre-chip" data-genre="Animation">Animation</div>
+          <div class="genre-chip" data-genre="Comedy">Comedy</div>
+          <div class="genre-chip" data-genre="Crime">Crime</div>
+          <div class="genre-chip" data-genre="Drama">Drama</div>
+          <div class="genre-chip" data-genre="Fantasy">Fantasy</div>
+          <div class="genre-chip" data-genre="Horror">Horror</div>
+          <div class="genre-chip" data-genre="Mystery">Mystery</div>
+          <div class="genre-chip" data-genre="Romance">Romance</div>
+          <div class="genre-chip" data-genre="Science Fiction">Sci-Fi</div>
+          <div class="genre-chip" data-genre="Thriller">Thriller</div>
+        </div>
+
+        <!-- Filters & Action Bar -->
+        <div class="preference-actions">
+          <div class="preference-filters">
+            <div class="filter-item">
+              <label for="rating-select" class="filter-label">Min Rating:</label>
+              <select id="rating-select" class="filter-select">
+                <option value="0">Any Rating</option>
+                <option value="6.0">⭐ 6.0+</option>
+                <option value="7.0" selected>⭐ 7.0+</option>
+                <option value="8.0">⭐ 8.0+</option>
+              </select>
+            </div>
+
+            <div class="filter-item">
+              <label for="limit-select" class="filter-label">Count:</label>
+              <select id="limit-select" class="filter-select">
+                <option value="9">9 movies</option>
+                <option value="18" selected>18 movies</option>
+                <option value="27">27 movies</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="button" id="discover-btn" class="btn btn-primary">
+            <span class="btn-text">Discover Movies</span>
+            <span class="btn-arrow">✨</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Search by Title Option -->
+      <div class="search-box-card" id="search-section">
+        <div class="search-controls-wrapper">
+          <div class="search-input-group">
+            <label for="movie-search-input" class="visually-hidden">Search for a movie by title</label>
+            <span class="search-icon">🔍</span>
+            <input 
+              type="text" 
+              id="movie-search-input" 
+              class="search-input" 
+              placeholder="Or search directly by title (e.g. Inception, Interstellar, The Dark Knight)..."
+              autocomplete="off"
+              aria-autocomplete="list"
+              aria-controls="search-suggestions-dropdown"
+              aria-expanded="false"
+            />
+            <button type="button" id="clear-search-btn" class="clear-btn" aria-label="Clear search input" hidden>&times;</button>
+          </div>
+
+          <button type="button" id="get-recommendations-btn" class="btn btn-secondary" disabled>
+            <span class="btn-text">Search Movies</span>
+            <span class="btn-arrow">→</span>
+          </button>
+        </div>
+
+        <!-- Autocomplete Suggestions Dropdown -->
+        <div id="search-suggestions-dropdown" class="suggestions-dropdown" role="listbox" hidden></div>
+      </div>
+    </section>
+
+    <!-- Error/Notice Banner Container -->
+    <div id="notification-banner" class="notification-banner" role="alert" hidden>
+      <span class="notification-icon" id="notification-icon">⚠️</span>
+      <span class="notification-message" id="notification-message"></span>
+      <button type="button" class="notification-close" id="notification-close" aria-label="Dismiss message">&times;</button>
+    </div>
+
+    <!-- Recommendation / Catalog Results Section -->
+    <section class="recommendations-section" id="recommendations-section">
+      <div class="section-header">
+        <div>
+          <div class="view-tabs">
+            <button type="button" class="view-tab active" id="tab-recommendations">✨ Recommendations</button>
+            <button type="button" class="view-tab" id="tab-watchlist" title="View your saved watchlist">
+              <span>🔖 My Watchlist</span>
+              <span class="view-tab-badge" id="view-watchlist-count">0</span>
+            </button>
+          </div>
+          <h2 class="section-title" id="results-heading">Recommended Movies</h2>
+          <p class="section-description" id="recommendations-subtitle">
+            Click on any movie to view its detailed synopsis and get personalized <em>"You Might Also Like"</em> suggestions.
+          </p>
+        </div>
+        <div class="results-count-badge" id="results-count-badge" hidden>
+          <span id="results-count-text">0 movies</span>
+        </div>
+      </div>
+
+      <!-- Loading State Indicator -->
+      <div id="loading-spinner-container" class="loading-container" hidden>
+        <div class="spinner"></div>
+        <p class="loading-text">Loading movies</p>
+      </div>
+
+      <!-- Movies Grid -->
+      <div class="movies-grid" id="recommendations-grid">
+        <!-- Initial Empty State Placeholder -->
+        <div class="empty-state" id="initial-empty-state">
+          <div class="empty-state-icon">🍿</div>
+          <h3 class="empty-state-title">Select Your Preferences Above</h3>
+          <p class="empty-state-desc">
+            Choose your favorite genres and click <strong>Discover Movies</strong>, or search for a specific title.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ML Architecture & Model Documentation Section -->
+    <section class="about-section" id="about-section">
+      <div class="about-card">
+        <h2 class="about-title">How CineML Works</h2>
+        <p class="about-summary">
+          CineML couples a scalable MongoDB Atlas database with an offline Machine Learning pipeline to deliver fast, privacy-preserving recommendations without user tracking.
+        </p>
+
+        <div class="features-grid">
+          <div class="feature-item">
+            <div class="feature-icon">🍃</div>
+            <h3 class="feature-heading">MongoDB Atlas</h3>
+            <p class="feature-desc">Stores movie documents, genres, plot metadata, and poster URLs for flexible querying and instant retrieval.</p>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">🔤</div>
+            <h3 class="feature-heading">TF-IDF Vectorization</h3>
+            <p class="feature-desc">Plot overviews, genres, and keywords are tokenized, stemmed, and converted into high-dimensional numerical vectors.</p>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">📐</div>
+            <h3 class="feature-heading">Cosine Distance</h3>
+            <p class="feature-desc">Evaluates the angular proximity between movie content vectors to measure narrative and thematic similarity.</p>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">🛍️</div>
+            <h3 class="feature-heading">"You Might Also Like"</h3>
+            <p class="feature-desc">E-commerce style nearest neighbor recommendations are dynamically loaded when viewing any film.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Movie Detail Modal with "You Might Also Like" Bar -->
+  <div class="modal-overlay" id="movie-detail-modal" role="dialog" aria-modal="true" aria-labelledby="modal-movie-title">
+    <div class="modal-container">
+      <button type="button" class="modal-close-btn" id="modal-close-btn" aria-label="Close details modal">&times;</button>
+      
+      <!-- Top Movie Hero Details -->
+      <div class="modal-hero">
+        <div class="modal-poster-wrap">
+          <img src="" alt="" id="modal-poster" class="modal-poster" />
+        </div>
+        <div class="modal-info">
+          <h2 class="modal-title" id="modal-movie-title">Movie Title</h2>
+          <div class="modal-meta-row">
+            <span class="rating-badge" id="modal-rating">⭐ 7.5</span>
+            <span class="modal-meta-item" id="modal-year">2020</span>
+          </div>
+          <div class="modal-genres" id="modal-genres"></div>
+          <p class="modal-overview" id="modal-overview">Movie overview synopsis...</p>
+          
+          <!-- Movie Modal Action Buttons (Watchlist & Like) -->
+          <div class="modal-actions-row">
+            <button type="button" class="modal-btn-action" id="modal-watchlist-btn">
+              <span class="btn-icon">🔖</span>
+              <span class="btn-label" id="modal-watchlist-label">Add to Watchlist</span>
+            </button>
+            <button type="button" class="modal-btn-action" id="modal-like-btn">
+              <span class="btn-icon">🤍</span>
+              <span class="btn-label" id="modal-like-label">0 Likes</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feedback / Community Reviews Section -->
+      <div class="modal-feedback-section">
+        <div class="feedback-header">
+          <h3 class="feedback-title">
+            <span>💬</span> Audience Reviews & Feedback
+          </h3>
+          <span class="feedback-count" id="feedback-count-label">0 reviews</span>
+        </div>
+
+        <!-- Feedback Post Form -->
+        <form class="feedback-form" id="movie-feedback-form">
+          <div class="feedback-rating-picker">
+            <span class="rating-picker-label">Your Rating:</span>
+            <div class="rating-stars" id="feedback-star-picker">
+              <!-- Star buttons 1 to 10 generated via JS -->
+            </div>
+            <span class="rating-value-badge" id="rating-value-badge">⭐ 10 / 10</span>
+          </div>
+          <textarea 
+            class="feedback-textarea" 
+            id="feedback-comment-input" 
+            placeholder="Write your review or thoughts about this movie..."
+            rows="2" 
+            maxlength="1000"
+            required
+          ></textarea>
+          <div class="feedback-form-footer">
+            <span class="feedback-auth-hint" id="feedback-auth-hint"></span>
+            <button type="submit" class="btn-submit-feedback" id="btn-submit-feedback">
+              Post Review
+            </button>
+          </div>
+        </form>
+
+        <!-- List of existing reviews -->
+        <div class="feedback-list" id="modal-feedback-list">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+
+      <!-- Bottom "You Might Also Like" Bar -->
+      <div class="modal-recs-section">
+        <div class="modal-recs-header">
+          <h3 class="modal-recs-title">
+            <span>✨</span> You Might Also Like
+          </h3>
+          <span class="modal-recs-badge">ML Nearest Neighbors</span>
+        </div>
+        <div class="recs-scroll-track" id="modal-recs-track">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer with TMDB Attribution -->
+  <footer class="footer" role="contentinfo">
+    <div class="footer-container">
+      <div class="footer-branding">
+        <div class="brand-logo">
+          <span class="logo-icon">🎬</span>
+          <span class="logo-text">Cine<span class="highlight">ML</span></span>
+        </div>
+        <p class="footer-tagline">Machine Learning Movie Recommendation System • College Mini-Project</p>
+      </div>
+
+      <!-- TMDB Required Attribution -->
+      <div class="tmdb-attribution">
+        <div class="tmdb-logo-wrapper">
+          <span class="tmdb-pill">TMDB API</span>
+        </div>
+        <p class="tmdb-disclaimer">
+          This product uses the TMDB API and MongoDB Atlas.
+        </p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; CineML Academic Project. Built with FastAPI, MongoDB Atlas, and Scikit-learn.</p>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

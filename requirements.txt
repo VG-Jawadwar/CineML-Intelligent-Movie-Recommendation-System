@@ -1,0 +1,22 @@
+##dependency
+streamlit
+numpy
+pandas
+nltk
+scikit-learn
+notebook
+PyYAML
+requests
+python-dotenv
+fastapi
+uvicorn
+httpx
+pytest
+pymongo
+dnspython
+certifi
+google-auth
+pyjwt
+
+##local packages -
+# -e . 
